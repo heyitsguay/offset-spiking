@@ -1,9 +1,22 @@
 cmake_minimum_required(VERSION 3.3)
-project(offset_spiking)
+project(offset-spiking)
 
-set(SRCDIR, src)
-set(BUILDDIR, build)
-set(INCDIR, include)
+set(SRC
+    src/Cell.cpp
+    src/Network.cpp
+    src/Synapse.cpp
+    src/epsp_histogram.cpp
+    src/main.cpp
+    src/offset_test.cpp
+)
+
+set(INCLUDE
+    include/Cell.h
+    include/Network.h
+    include/Synapse.h
+    include/epsp_histogram.h
+    include/offset_test.h
+)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -Wall -g")
@@ -20,5 +33,6 @@ if(Boost_FOUND AND OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OpenMP_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${OpenMP_CXX_FLAGS}")
 
-set(SOURCE_FILES src/main.cpp)
-add_executable(offset_spiking ${SOURCE_FILES})
+    add_executable(offset-spiking ${SRC} ${INCLUDE})
+    target_link_libraries(offset-spiking ${Boost_LIBRARIES})
+endif()
