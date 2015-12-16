@@ -7,3 +7,6 @@ data
 
 # Ignore CLion project files.
 .idea
+
+# Ignore git stage/commit/push script.
+gitpush.sh
