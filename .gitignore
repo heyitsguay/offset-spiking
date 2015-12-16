@@ -1,0 +1,9 @@
+# Ignore vim/gedit backup files.
+*~
+
+# Ignore the build and data dirs.
+build
+data
+
+# Ignore CLion project files.
+.idea
