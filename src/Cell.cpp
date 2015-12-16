@@ -8,15 +8,14 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <cassert>
 
-#include "cell_cpp.h"
+#include "Cell.h"
 
 namespace kcnet {
 
     const double V_offset = 65.;
 
-    CppKenyonCell::CppKenyonCell(double i_dt) {
+    KenyonCell::KenyonCell(double i_dt) {
         dt = i_dt; // RK4 update time-step
 
         V = -69.145387; // membrane voltage (mV)
@@ -73,9 +72,9 @@ namespace kcnet {
         weight[3] = dt;
     }
 
-    CppKenyonCell::~CppKenyonCell(){}
+    KenyonCell::~KenyonCell(){}
 
-    void CppKenyonCell::update(int i_n_synapses, std::vector<double> i_syn_gOcs, double i_syn_E, double i_I_noise) {
+    void KenyonCell::update(int i_n_synapses, std::vector<double> i_syn_gOcs, double i_syn_E, double i_I_noise) {
         /*double k_V[4], k_Ca[4], k_m_Ca[4], k_h_Ca[4], k_m_KCa[4],
                k_m_KA[4], k_m_Na[4], k_h_Na[4], k_m_K[4], k_h_K[4];*/
         double k_V[4] = {0., 0., 0., 0.};
@@ -193,72 +192,72 @@ namespace kcnet {
     }
 
     // I_Ca gating variable functions (taken from Maxim Bazhenov's RE cell code).
-    double CppKenyonCell::minf_Ca(double i_V) {
+    double KenyonCell::minf_Ca(double i_V) {
         return 1. / (1. + std::exp(-(i_V + 52.) / 7.4));
     }
-    double CppKenyonCell::mtau_Ca(double i_V) {
+    double KenyonCell::mtau_Ca(double i_V) {
         return (3. + 1. / (std::exp((i_V + 27.) / 10.) + std::exp(-(i_V + 102.) / 15.))) / 9.90;
     }
-    double CppKenyonCell::hinf_Ca(double i_V) {
+    double KenyonCell::hinf_Ca(double i_V) {
         return 1. / (1. + std::exp((i_V + 80.) / 5.));
     }
-    double CppKenyonCell::htau_Ca(double i_V) {
+    double KenyonCell::htau_Ca(double i_V) {
         return (85. + 1. / (std::exp((i_V + 48.) / 4.) + std::exp(-(i_V + 407.) / 50.))) / 3.74;
     }
 
     // I_KCa gating variable functions.
-    double CppKenyonCell::minf_KCa(double i_Ca) {
+    double KenyonCell::minf_KCa(double i_Ca) {
         return 3333. * std::pow(i_Ca, 2) / (3333. * std::pow(i_Ca, 2) + 1.);
     }
-    double CppKenyonCell::mtau_KCa(double i_Ca) {
+    double KenyonCell::mtau_KCa(double i_Ca) {
         return std::max(0.1, 0.896 / (100. * std::pow(i_Ca, 2) + 0.03));
     }
 
     // I_KA gating variable functions.
-    double CppKenyonCell::minf_KA(double i_V) {
+    double KenyonCell::minf_KA(double i_V) {
         return 1. / (1. + std::exp(-(i_V + 60.) / 8.5));
     }
-    double CppKenyonCell::mtau_KA(double i_V) {
+    double KenyonCell::mtau_KA(double i_V) {
         return (1. / (std::exp((i_V + 35.82) / 19.69) + std::exp(-(i_V + 79.69) / 12.7)) + 0.37) / 3.74;
     }
 
     // I_Na gating variable functions.
-    double CppKenyonCell::malpha_Na(double i_V) {
+    double KenyonCell::malpha_Na(double i_V) {
         double V2 = i_V + V_offset;
         return std::abs(V2 - 13.) < 1e-9? 1.28 : 0.32 * (13. - V2) / (std::exp((13. - V2) / 4.) - 1.);
     }
-    double CppKenyonCell::mbeta_Na(double i_V) {
+    double KenyonCell::mbeta_Na(double i_V) {
         double V2 = i_V + V_offset;
         return std::abs(V2 - 40.) < 1e-9? 1.4 : 0.28 * (V2 - 40.) / (std::exp((V2 - 40.) / 5.) - 1.);
     }
-    double CppKenyonCell::halpha_Na(double i_V) {
+    double KenyonCell::halpha_Na(double i_V) {
         double V2 = i_V + V_offset;
         return 0.128 * std::exp((17. - V2) / 18.);
     }
-    double CppKenyonCell::hbeta_Na(double i_V) {
+    double KenyonCell::hbeta_Na(double i_V) {
         double V2 = i_V + V_offset;
         return 4. / (std::exp((40. - V2) / 5.) + 1.);
     }
 
     // I_K gating variable functions.
-    double CppKenyonCell::malpha_K(double i_V) {
+    double KenyonCell::malpha_K(double i_V) {
         double V2 = i_V + V_offset;
         return std::abs(V2 - 15.) < 1e-9? 0.16 : 0.032 * (15. - V2) / (std::exp((15. - V2) / 5.) - 1.);
     }
-    double CppKenyonCell::mbeta_K(double i_V) {
+    double KenyonCell::mbeta_K(double i_V) {
         double V2 = i_V + V_offset;
         return 0.5 * std::exp((10. - V2) / 40.);
     }
-    double CppKenyonCell::halpha_K(double i_V) {
+    double KenyonCell::halpha_K(double i_V) {
         double V2 = i_V + V_offset;
         return 0.028 * std::exp((15. - V2) / 15.) + 2. / (std::exp((85. - V2) / 10.) + 1.);
     }
-    double CppKenyonCell::hbeta_K(double i_V) {
+    double KenyonCell::hbeta_K(double i_V) {
         double V2 = i_V + V_offset;
         return 0.4 / (std::exp((40. - V2) / 10.) + 1.);
     }
 
-    void CppKenyonCell::save_state(std::string i_name) {
+    void KenyonCell::save_state(std::string i_name) {
         try {
             std::ofstream file;
             std::string file_name = "../states/" + i_name + ".txt";
@@ -285,14 +284,14 @@ namespace kcnet {
 
             file.close();
         } catch(int e) {
-            std::cout << "CppKenyonCell state save failed. Exception " << e << "\n";
+            std::cout << "KenyonCell state save failed. Exception " << e << "\n";
         }
     }
 
-    void CppKenyonCell::load_state(std::string _name) {
+    void KenyonCell::load_state(std::string _name) {
 
         // Get the location of the file. Open a read stream.
-        std::string file_name = "../states/" + _name + ".dat";
+        std::string file_name = "../../src/state/" + _name + ".dat";
         std::ifstream file(file_name);
 
         if(file.is_open()) {
@@ -309,11 +308,11 @@ namespace kcnet {
             file.close();
         } else {
             // File could not be opened.
-            printf("Warning: could not load state %s.", _name.c_str());
+            std::cout << "Could not load state \n";
         }
     }
 
-    void CppKenyonCell::reset_state(std::vector<int> _idxs) {
+    void KenyonCell::reset_state(std::vector<int> _idxs) {
 
         // Tedious but what is there to do
         if(_idxs[0] != 0) { // Load new state for V.

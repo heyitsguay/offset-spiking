@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "gnuplot-iostream.h"
-#include "network_cpp.h"
+#include "Network.h"
 #include "offset_test.h"
 #include "epsp_histogram.h"
 
@@ -18,7 +18,7 @@ int main2(double, int, double, double, double, double, double, double);
 int main1(std::string, unsigned int, unsigned int, bool);
 
 int main() {
-    main1("memtest", 5, 8, true);
+//    main1("memtest", 5, 8, true);
 //    main1("test121315_8x_2", 20, 8, true);
 //    main1("test121315_8x_3", 20, 8, true);
 //    main1("test121315_8x_4", 20, 8, true);
@@ -31,7 +31,7 @@ int main() {
 //    main1("test121315_8x_5_0", 20, 8, false);
 
     // lambda=0.0025 --> average spike interarrival time of 400ms --> average of 2.5 spikes/sec at rest.
-//    main2(100, 200, 0.03, 40., 60., 1.5, 15., 0.0025);
+    main2(100, 200, 0.03, 40., 60., 1.5, 15., 0.0025);
 //    main2(100, 200, 0.03, 40., 60., 1.5, 15., 0.);
     return 0;
 }
@@ -69,7 +69,7 @@ int main2(double runtime, int n_synapses, double dt, double t0, double t1, doubl
     srand(rd());
     Gnuplot gp;
 
-    CppNetwork net = CppNetwork();
+    Network net = Network();
     net.setup(n_synapses, dt, t0, t1, sigma_noise, syn_weight, lambda);
     net.create_synapses(400 - n_synapses, syn_weight, false);
 
@@ -77,7 +77,7 @@ int main2(double runtime, int n_synapses, double dt, double t0, double t1, doubl
 
     clock_t ct0, ct1;
     double elapsed;
-    for(int j=0; j<3; j++) {
+    for(int j=0; j<1; j++) {
         ct0 = clock();
         net.run(runtime, true);
         ct1 = clock();
@@ -91,8 +91,12 @@ int main2(double runtime, int n_synapses, double dt, double t0, double t1, doubl
 
         vector<pair<double, double> > plot_pts0, plot_pts1;
         for (int i = 0; i < net.ts.size(); i++) {
+            double scale;
+
             plot_pts0.push_back(make_pair(net.ts[i], plot_vec0[i]));
-            plot_pts1.push_back(make_pair(net.ts[i], plot_vec1[i]));
+
+            scale = abs(plot_vec0[i]) > 0.000001? plot_vec0[i] : 0.000001*std::sgn(plot_vec0[i]);
+            plot_pts1.push_back(make_pair(net.ts[i], plot_vec1[i]) / scale);
         }
 
         ostringstream oss0, oss1;

@@ -38,7 +38,7 @@ namespace kcnet {
         if(n_threads_ == 1) {
             for(int i=0; i<n_pairs; i++) {
 
-                CppNetwork net = CppNetwork();
+                Network net = Network();
 
                 // Get the current pair of trial parameters.
                 std::pair<int, double> a_pair = trial_params[i];
@@ -58,7 +58,7 @@ namespace kcnet {
                 if(lambda > 0) {
                     net.create_synapses(total_synapses - N, syn_weight, false);
                 }
-                // Set net's CppKenyonCell to have the desired reset state (at equilibrium).
+                // Set net's KenyonCell to have the desired reset state (at equilibrium).
                 //if(i == 0) {
                     net.kc->load_state("eq093015");
                 //}
@@ -74,12 +74,12 @@ namespace kcnet {
 //            delete net;
         } else {
             std::vector<trial> *thread_trials = new std::vector<trial>[n_threads_];
-            CppNetwork *thread_nets = new CppNetwork[n_threads_];
-//            std::vector<CppNetwork> thread_nets;
+            Network *thread_nets = new Network[n_threads_];
+//            std::vector<Network> thread_nets;
             for(int i=0; i<n_threads_; i++){
-                CppNetwork new_net = CppNetwork();
+                Network new_net = Network();
                 thread_nets[i] = new_net;
-                // Run a dummy setup so that we can get the right CppKenyonCell reset state loaded.
+                // Run a dummy setup so that we can get the right KenyonCell reset state loaded.
                 thread_nets[i].setup(1, dt, t0, t0+1., sigma_noise, syn_weight, lambda);
                 thread_nets[i].kc->load_state("eq093015");
             }
@@ -95,7 +95,7 @@ namespace kcnet {
                      double window = a_pair.second;
                      double runtime = t0 + window + 20.;
 
-                     CppNetwork &net = thread_nets[thread_idx];
+                     Network &net = thread_nets[thread_idx];
                      net.setup(N, dt, t0, t0 + window, sigma_noise, syn_weight, lambda);
                      if(lambda > 0) {
                          net.create_synapses(total_synapses - N, syn_weight, false);

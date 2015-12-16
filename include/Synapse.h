@@ -6,7 +6,7 @@
 #pragma once
 
 namespace kcnet {
-    class CppCholinergicSynapse {
+    class CholinergicSynapse {
     public:
         double g, E, Oc, tnow, t0, dt, lambda;
         std::deque<double> ts;
@@ -14,8 +14,8 @@ namespace kcnet {
         double gOcs[4] = {0., 0., 0., 0.};
         bool has_t0;
 
-        CppCholinergicSynapse(double g_, double dt_, double t0_, double lambda_=0, bool has_t0_=true);
-        ~CppCholinergicSynapse();
+        CholinergicSynapse(double g_, double dt_, double t0_, double lambda_=0, bool has_t0_=true);
+        ~CholinergicSynapse();
 
         void update(double t_);
 

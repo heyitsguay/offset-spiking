@@ -8,8 +8,8 @@
 #include <string>
 #include <cstdlib>
 
-#include "cell_cpp.h"
-#include "synapse_cpp.h"
+#include "Cell.h"
+#include "Synapse.h"
 
 namespace kcnet {
     struct trial {
@@ -21,23 +21,23 @@ namespace kcnet {
         double window;
     };
 
-    class CppNetwork {
+    class Network {
     private:
         bool initialized = false;
 
     public:
         unsigned int n_synapses, n_active_synapses;
         double dt, t0, t1, sigma_noise, syn_weight, t_sim, lambda;
-        CppKenyonCell* kc;
-        std::vector<CppCholinergicSynapse*> pnkcs;
+        KenyonCell* kc;
+        std::vector<CholinergicSynapse*> pnkcs;
         std::vector<double> pnkc_ts;
         std::vector<double> ts, Vs, Cas, I_Ls, I_KLs, I_Cas, I_KCas, I_KAs, I_Nas, I_Ks, I_syns, I_noises;
 
-        // Contains results from each run of the CppNetwork.
+        // Contains results from each run of the Network.
         std::vector<trial> trials;
 
-        CppNetwork();
-        ~CppNetwork();
+        Network();
+        ~Network();
 
         void setup(int n_active_synapses_, double dt_, double t0_, double t1_, double sigma_noise_, double syn_weight_=15., double lambda_=0);
 

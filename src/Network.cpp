@@ -7,13 +7,13 @@
 #include <ctime>
 #include <algorithm>
 
-#include "network_cpp.h"
+#include "Network.h"
 
 namespace kcnet {
     const int init_n_syns = 200; // Initial reserved size for vector pnkc
 
-    CppNetwork::CppNetwork(){}
-    CppNetwork::~CppNetwork() {
+    Network::Network(){}
+    Network::~Network() {
         if(initialized) {
             delete (kc);
             for (int i = n_synapses - 1; i >= 0; i--) {
@@ -22,7 +22,7 @@ namespace kcnet {
         }
     }
 
-    void CppNetwork::setup(int n_active_synapses_, double dt_, double t0_, double t1_, double sigma_noise_, double syn_weight_, double lambda_) {
+    void Network::setup(int n_active_synapses_, double dt_, double t0_, double t1_, double sigma_noise_, double syn_weight_, double lambda_) {
 
         dt = dt_; // Network update time-step
 
@@ -46,7 +46,7 @@ namespace kcnet {
         // Erase the list of previous trials.
         trials = {};
 
-        // pnkcs if n_synapses_ != n_synapses. // If this CppNetwork has been initialized before:
+        // pnkcs if n_synapses_ != n_synapses. // If this Network has been initialized before:
         if(initialized) {
             // Clear all the data storage vectors.
             ts.clear();
@@ -80,7 +80,7 @@ namespace kcnet {
             /*// first check if n_synapses is changing.
             if(n_active_synapses_ != n_active_synapses) {
 
-                // If the new setup has fewer CppCholinergicSynapses:
+                // If the new setup has fewer CholinergicSynapses:
                 if(n_synapses_ < n_synapses) {
                     // Free allocated memory.
                     for(int i=n_synapses-1; i>=n_synapses_; i--){
@@ -105,27 +105,27 @@ namespace kcnet {
             resample_synapses(syn_weight);
 
         } else {
-            // This CppNetwork has not been initialized yet.
+            // This Network has not been initialized yet.
 
-            // Number of initial synapses in the CppNetwork.
+            // Number of initial synapses in the Network.
             n_active_synapses = 0;
             n_synapses = 0;
 
-            // Create the CppKenyonCell.
-            kc = new CppKenyonCell(dt);
+            // Create the KenyonCell.
+            kc = new KenyonCell(dt);
 
-            // pnkcs is a vector of CppCholinergicSynapses. Reserve memory for init_n_syns initially.
+            // pnkcs is a vector of CholinergicSynapses. Reserve memory for init_n_syns initially.
             pnkcs.reserve(init_n_syns);
 
-            // Create in_synapses_ CppCholinergicSynapses.
+            // Create in_synapses_ CholinergicSynapses.
             create_synapses(n_active_synapses_, syn_weight);
 
-            // Mark this CppNetwork initialized.
+            // Mark this Network initialized.
             initialized = true;
         }
     }
 
-    double CppNetwork::gsyn_icdf(double i_r) {
+    double Network::gsyn_icdf(double i_r) {
         // Used Python to build up a discretization of gysn's log10 empirical distribution's ICDF.
         // Interpolate linearly between the given values.
 
@@ -165,11 +165,11 @@ namespace kcnet {
 
     }
 
-    void CppNetwork::create_synapses(int n_synapses_, double isyn_weight_, bool has_t0_) {
-        // Creates in_synapses_ CppCholinergicSynapses with synaptic distributions scaled by isyn_weight_.
+    void Network::create_synapses(int n_synapses_, double isyn_weight_, bool has_t0_) {
+        // Creates in_synapses_ CholinergicSynapses with synaptic distributions scaled by isyn_weight_.
         if(n_synapses_ > 0) {
 
-            // Create the CppCholinergicSynapses.
+            // Create the CholinergicSynapses.
             for(int i=0; i<n_synapses_; i++) {
                 double log_gsyn, gsyn, t;
 
@@ -182,8 +182,8 @@ namespace kcnet {
                     t = t0 + (t1 - t0) * (double) std::rand() / RAND_MAX;
                 } else t = 10000000.;
 
-                // Add a new CppCholinergicSynapse with the given parameters to pnkcs.
-                CppCholinergicSynapse* new_syn = new CppCholinergicSynapse(gsyn, dt, t, lambda, has_t0_);
+                // Add a new CholinergicSynapse with the given parameters to pnkcs.
+                CholinergicSynapse* new_syn = new CholinergicSynapse(gsyn, dt, t, lambda, has_t0_);
                 pnkcs.push_back(new_syn);
                 n_synapses += 1;
                 if(has_t0_) {
@@ -197,7 +197,7 @@ namespace kcnet {
         }
     }
 
-    void CppNetwork::resample_synapses(double isyn_weight_) {
+    void Network::resample_synapses(double isyn_weight_) {
         // Resamples the random synapse firing times (same distribution - uniform on [t0, t1]).
         // Also
         if(n_synapses > 0) {
@@ -231,7 +231,7 @@ namespace kcnet {
         }
     }
 
-    void CppNetwork::run(double runtime_, bool reset_) {
+    void Network::run(double runtime_, bool reset_) {
         if(reset_) {
             kc->reset_state();
             resample_synapses(syn_weight);
@@ -248,17 +248,17 @@ namespace kcnet {
         // Number of simulation steps.
         const unsigned int n_steps = unsigned(int(std::ceil(runtime_ / dt)));
 
-        if(n_synapses > 0) { // If there are any CppCholinergicSynapses
+        if(n_synapses > 0) { // If there are any CholinergicSynapses
             // Allocate space in syn_gOcs to store their update data.
             syn_gOcs.resize(4 * n_synapses);
-            // Get their reversal potential from the first CppCholinergicSynapse.
+            // Get their reversal potential from the first CholinergicSynapse.
             syn_E = pnkcs[0]->E;
         } else { // No Synapses. Initialize syn_gOcs to hold one element.
             syn_gOcs.push_back(0.);
             syn_E = 0.;
         }
 
-        // Resize vectors of CppKenyonCell property values at each time step of the simulation.
+        // Resize vectors of KenyonCell property values at each time step of the simulation.
         ts.resize(n_steps);
         Vs.resize(n_steps);
         Cas.resize(n_steps);
@@ -279,21 +279,21 @@ namespace kcnet {
             I_noises.push_back(current_noise(gen));
         }
 
-        // Update the CppCholinergicSynapses and CppKenyonCells
+        // Update the CholinergicSynapses and KenyonCells
         for(int i=0; i<n_steps; i++) {
             if(n_synapses > 0) {
-                // Update CppCholinergicSynapses.
+                // Update CholinergicSynapses.
                 for(int j=0; j<n_synapses; j++) {
                     // Run the update.
                     pnkcs[j]->update(t_sim);
-                    // Save the CppCholinergicSynapse's gOc information.
+                    // Save the CholinergicSynapse's gOc information.
                     for(int k=0; k<4; k++) {
                         int idx = j + k * n_synapses;
                         syn_gOcs[idx] = pnkcs[j]->gOcs[k];
                     }
                 }
 
-                // Update the CppKenyonCell.
+                // Update the KenyonCell.
                 kc->update(n_synapses, syn_gOcs, syn_E, I_noises[i]);
 
                 // Update the KC property value lists.
@@ -327,7 +327,7 @@ namespace kcnet {
         trials.push_back(new_trial);
     }
 
-    std::vector<double> CppNetwork::count_spikes(double i_threshold) {
+    std::vector<double> Network::count_spikes(double i_threshold) {
         bool spiking_now = false;
         double peak_now = -10000.;
         double peak_t = -1.;

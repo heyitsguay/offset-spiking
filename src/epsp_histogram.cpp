@@ -3,11 +3,9 @@
 //
 #include "epsp_histogram.h"
 
-//#include <omp.h>
 #include <fstream>
 #include <sys/time.h>
 #include <algorithm>
-//#include <cmath>
 
 namespace kcnet {
     void epsp_histogram(const std::string save_name_, const unsigned int n_trials_, const double syn_weight_) {
@@ -19,9 +17,9 @@ namespace kcnet {
         // Start timing.
         gettimeofday(&clock0, NULL);
 
-        // A single CppNetwork (net) is created with one synapse, and initialized
+        // A single Network (net) is created with one synapse, and initialized
         // to equilibrium.
-        CppNetwork net = CppNetwork();
+        Network net = Network();
         double dt = 0.03;
         double t0 = 2;
         double runtime = 15.;

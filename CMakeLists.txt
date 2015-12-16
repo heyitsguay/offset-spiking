@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 project(offset-spiking)
 
+include_directories(src include lib)
+
 set(SRC
     src/Cell.cpp
     src/Network.cpp

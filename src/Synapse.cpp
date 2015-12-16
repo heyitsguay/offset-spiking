@@ -1,7 +1,7 @@
 //
 // Created by Matthew Guay on 9/17/15.
 //
-#include "synapse_cpp.h"
+#include "Synapse.h"
 
 #include <vector>
 #include <random>
@@ -17,7 +17,7 @@ namespace kcnet {
     const double alpha = 0.94;
     const double beta = 0.18;
 
-    CppCholinergicSynapse::CppCholinergicSynapse(double g_, double dt_, double t0_, double lambda_, bool has_t0_) {
+    CholinergicSynapse::CholinergicSynapse(double g_, double dt_, double t0_, double lambda_, bool has_t0_) {
         g = g_; // maximum synaptic conductance (μS)
         dt = dt_; // RK4 update time-step (ms)
         t0 = t0_; // Deterministic synaptic activation time.
@@ -41,9 +41,9 @@ namespace kcnet {
 //        ts.pop_front();
     }
 
-    CppCholinergicSynapse::~CppCholinergicSynapse() {}
+    CholinergicSynapse::~CholinergicSynapse() {}
 
-    void CppCholinergicSynapse::update(double t_) {
+    void CholinergicSynapse::update(double t_) {
         // RK4 update of the synapse's Oc parameter.
 
         // Update tnow, 0.3 ms after the previous activation.
@@ -82,7 +82,7 @@ namespace kcnet {
         Oc += dt/6 * (k_Oc[0] + 2*k_Oc[1] + 2*k_Oc[2] + k_Oc[3]);
     }
 
-    void CppCholinergicSynapse::generate_random_spikes(double lambda_, unsigned int n_) {
+    void CholinergicSynapse::generate_random_spikes(double lambda_, unsigned int n_) {
         // Clear any previous values in ts.
         ts.clear();
 
@@ -115,7 +115,7 @@ namespace kcnet {
         ts.pop_front();
     }
 
-    double CppCholinergicSynapse::T(double t_) {
+    double CholinergicSynapse::T(double t_) {
         // Square pulse which models the neurotransmitter opening of the synaptic channels.
         return 0.5 * step(tnow + 0.3 - t_) * step(t_ - tnow);
     }

@@ -11,7 +11,7 @@ namespace kcnet{
     const std::vector<int> idxs_all = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     const std::vector<int> idxs_noI = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    class CppKenyonCell{
+    class KenyonCell{
     private:
         double weight [4];
         std::vector<double> reset_to_this;
@@ -23,8 +23,8 @@ namespace kcnet{
                 m_Na, h_Na, g_K, E_K, m_K, h_K,
                 I_L, I_KL, I_Ca, I_KCa, I_KA, I_Na, I_K, I_syn;
 
-        CppKenyonCell(double i_dt);
-        ~CppKenyonCell();
+        KenyonCell(double i_dt);
+        ~KenyonCell();
 
         void update(int i_n_synapses, std::vector<double> i_syn_gOcs, double i_syn_E, double i_I_noise);
 
