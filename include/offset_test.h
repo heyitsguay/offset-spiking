@@ -2,6 +2,7 @@
 // Created by Matthew Guay on 10/11/15.
 //
 #pragma once
+
 #include "Network.h"
 
 namespace kcnet {

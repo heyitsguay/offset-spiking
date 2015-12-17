@@ -13,22 +13,26 @@
 using namespace std;
 using namespace kcnet;
 
+// Signum function.
+template <typename T> int sgn(T x) {
+    return (T(0) < x) - (x < T(0));
+}
 
 int main2(double, int, double, double, double, double, double, double);
 int main1(std::string, unsigned int, unsigned int, bool);
 
 int main() {
-//    main1("memtest", 5, 8, true);
-//    main1("test121315_8x_2", 20, 8, true);
-//    main1("test121315_8x_3", 20, 8, true);
-//    main1("test121315_8x_4", 20, 8, true);
-//    main1("test121315_8x_5", 20, 8, true);
+//    offset_test("memtest", 5, 8, true);
+//    offset_test("test121315_8x_2", 20, 8, true);
+//    offset_test("test121315_8x_3", 20, 8, true);
+//    offset_test("test121315_8x_4", 20, 8, true);
+//    offset_test("test121315_8x_5", 20, 8, true);
 //
-//    main1("test121515_8x_1_0", 20, 8, false);
-//    main1("test121315_8x_2_0", 20, 8, false);
-//    main1("test121315_8x_3_0", 20, 8, false);
-//    main1("test121315_8x_4_0", 20, 8, false);
-//    main1("test121315_8x_5_0", 20, 8, false);
+//    offset_test("test121515_8x_1_0", 20, 8, false);
+//    offset_test("test121315_8x_2_0", 20, 8, false);
+//    offset_test("test121315_8x_3_0", 20, 8, false);
+//    offset_test("test121315_8x_4_0", 20, 8, false);
+//    offset_test("test121315_8x_5_0", 20, 8, false);
 
     // lambda=0.0025 --> average spike interarrival time of 400ms --> average of 2.5 spikes/sec at rest.
     main2(100, 200, 0.03, 40., 60., 1.5, 15., 0.0025);
@@ -36,28 +40,6 @@ int main() {
     return 0;
 }
 
-//int main0(int& argc, char& *argv[]) {
-//    unsigned int n_trials;
-//    double syn_weight;
-//    std::string save_name;
-//    if(argc == 1) {
-//        save_name = "default";
-//    } else {
-//        save_name = argv[1];
-//    }
-//    n_trials = (unsigned int) ((argc > 2)? atoi(argv[2]) : 1000);
-//    syn_weight = (unsigned int) ((argc > 3)? atof(argv[3]) : 18.);
-//    epsp_histogram(save_name, n_trials, syn_weight);
-//    return 0;
-//}
-//
-int main1(std::string save_name, unsigned int n_trials, unsigned int n_threads, bool use_noise) {
-    /* Runs a series of (n_trials) offset spiking tests using (n_threads) threads.
-     * Tests use no background spiking. More test parameters are declared in offset_test.cpp.
-     */
-    offset_test(save_name, n_trials, n_threads, use_noise);
-    return 0;
-}
 
 int main2(double runtime, int n_synapses, double dt, double t0, double t1, double sigma_noise, double syn_weight, double lambda) {
     //int n_synapses;
@@ -95,8 +77,8 @@ int main2(double runtime, int n_synapses, double dt, double t0, double t1, doubl
 
             plot_pts0.push_back(make_pair(net.ts[i], plot_vec0[i]));
 
-            scale = abs(plot_vec0[i]) > 0.000001? plot_vec0[i] : 0.000001*std::sgn(plot_vec0[i]);
-            plot_pts1.push_back(make_pair(net.ts[i], plot_vec1[i]) / scale);
+            scale = abs(plot_vec0[i]) > 0.000001? plot_vec0[i] : 0.000001*sgn(plot_vec0[i]);
+            plot_pts1.push_back(make_pair(net.ts[i], plot_vec1[i] / scale));
         }
 
         ostringstream oss0, oss1;
@@ -105,8 +87,8 @@ int main2(double runtime, int n_synapses, double dt, double t0, double t1, doubl
         double y0min, y0max, y1min, y1max;
         y0min = *min_element(plot_vec0.begin(), plot_vec0.end()) - 0.0001;
         y0max = *max_element(plot_vec0.begin(), plot_vec0.end()) + 0.0001;
-        y1min = *min_element(plot_vec1.begin(), plot_vec1.end()) - 0.0001;
-        y1max = *max_element(plot_vec1.begin(), plot_vec1.end()) + 0.0001;
+        y1min = -0.0001;//*min_element(plot_vec1.begin(), plot_vec1.end()) - 0.0001;
+        y1max = 0.05;//*max_element(plot_vec1.begin(), plot_vec1.end()) + 0.0001;
 
         // Plot command.
         oss0 << "set xrange [0:" << runtime << "]\nset yrange [" << y0min << ":"

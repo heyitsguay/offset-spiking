@@ -3,7 +3,7 @@ function trial = create_trial(trialid_)
 % C++ struct trial defined at the beginning of ../src/network_cpp.h. This
 % function assumes trialid_ points to an open file containing trial
 % data formatted by the function run_test0 defined in
-% ../src/offset_test.cpp. 
+% ../src/offset_test.cpp.
 %
 % Filename: create_trial.m
 % ========
