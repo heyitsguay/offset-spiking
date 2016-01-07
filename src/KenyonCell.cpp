@@ -9,24 +9,24 @@
 #include <iostream>
 #include <iomanip>
 
-#include "Cell.h"
+#include "KenyonCell.h"
 
 namespace kcnet {
 
     const double V_offset = 65.;
 
-    KenyonCell::KenyonCell(double i_dt) {
-        dt = i_dt; // RK4 update time-step
+    KenyonCell::KenyonCell(double dt_) {
+        dt = dt_;  // RK4 update time-step
 
-        V = -69.145387; // membrane voltage (mV)
-        C = 2.9e-1; // membrane capacitance (μF) times V-> mV conversion factor (1000)
-        Cinv = 1. / C; // reciprocal of membrane capacitance
-        Ca = 2.629407e-4; // intracellular Ca2+ concentration
+        V = -69.145387;  // membrane voltage (mV)
+        C = 2.9e-1;  // membrane capacitance (μF) times V-> mV conversion factor (1000)
+        Cinv = 1. / C;  // reciprocal of membrane capacitance
+        Ca = 2.629407e-4;  // intracellular Ca2+ concentration
 
         // Leakage current parameters.
-        g_L = 2.9e-2; // leakage conductance (μS)
-        g_KL = 1.16e-3; // potassium leakage conductance (μS)
-        E_L = -65.; // leakage reversal potential (mV)
+        g_L = 2.9e-2;  // leakage conductance (μS)
+        g_KL = 1.16e-3;  // potassium leakage conductance (μS)
+        E_L = -65.;  // leakage reversal potential (mV)
 
         // Transient calcium current parameters (I_Ca).
         g_Ca = 2.9e-2; // I_Ca conductance (μS)
@@ -70,13 +70,31 @@ namespace kcnet {
         weight[1] = 0.5 * dt;
         weight[2] = 0.5 * dt;
         weight[3] = dt;
+
+        // Initialise the reset state to the initial state here.
+        reset.push_back(V);
+        reset.push_back(Ca);
+        reset.push_back(m_Ca);
+        reset.push_back(h_Ca);
+        reset.push_back(m_KCa);
+        reset.push_back(m_KA);
+        reset.push_back(m_Na);
+        reset.push_back(h_Na);
+        reset.push_back(m_K);
+        reset.push_back(h_K);
+        reset.push_back(I_L);
+        reset.push_back(I_KL);
+        reset.push_back(I_Ca);
+        reset.push_back(I_KCa);
+        reset.push_back(I_KA);
+        reset.push_back(I_Na);
+        reset.push_back(I_K);
+        reset.push_back(I_syn);
     }
 
     KenyonCell::~KenyonCell(){}
 
-    void KenyonCell::update(int i_n_synapses, std::vector<double> i_syn_gOcs, double i_syn_E, double i_I_noise) {
-        /*double k_V[4], k_Ca[4], k_m_Ca[4], k_h_Ca[4], k_m_KCa[4],
-               k_m_KA[4], k_m_Na[4], k_h_Na[4], k_m_K[4], k_h_K[4];*/
+    void KenyonCell::update(int n_synapses_, std::vector<double> syn_gOcs_, double syn_E_, double I_noise_, double I_in_) {
         double k_V[4] = {0., 0., 0., 0.};
         double k_Ca[4] = {0., 0., 0., 0.};
         double k_m_Ca[4] = {0., 0., 0., 0.};
@@ -129,14 +147,14 @@ namespace kcnet {
 
             // Calculate synaptic currents.
             I_syn_i = 0;
-            if (i_n_synapses > 0) {
-                for (int j = 0; j < i_n_synapses; j++) {
-                    I_syn_i += i_syn_gOcs[i * i_n_synapses + j] * (V_i - i_syn_E);
+            if (n_synapses_ > 0) {
+                for (int j = 0; j < n_synapses_; j++) {
+                    I_syn_i += syn_gOcs_[i * n_synapses_ + j] * (V_i - syn_E_);
                 }
             }
 
             // Update RK4 k variables.
-            k_V[i] = Cinv * (-I_L_i - I_KL_i - I_Ca_i - I_KCa_i - I_KA_i - I_Na_i - I_K_i - I_syn_i - i_I_noise);
+            k_V[i] = Cinv * (-I_L_i - I_KL_i - I_Ca_i - I_KCa_i - I_KA_i - I_Na_i - I_K_i - I_syn_i - I_noise_ - I_in_);
             k_Ca[i] = -5.2e-5 * I_Ca_i - (Ca_i - 2.4e-4) / 100.;
             k_m_Ca[i] = (minf_Ca(V_i) - m_Ca_i) / mtau_Ca(V_i);
             k_h_Ca[i] = (hinf_Ca(V_i) - h_Ca_i) / htau_Ca(V_i);
@@ -169,98 +187,78 @@ namespace kcnet {
         I_Na = g_Na * std::pow(m_Na, 3) * h_Na * (V - E_Na);
         I_K = g_K * std::pow(m_K, 4) * h_K * (V - E_K);
         I_syn = I_syn_i;
-
-        // Initialise the reset_to_this state to the initial state here.
-        reset_to_this.push_back(V);
-        reset_to_this.push_back(Ca);
-        reset_to_this.push_back(m_Ca);
-        reset_to_this.push_back(h_Ca);
-        reset_to_this.push_back(m_KCa);
-        reset_to_this.push_back(m_KA);
-        reset_to_this.push_back(m_Na);
-        reset_to_this.push_back(h_Na);
-        reset_to_this.push_back(m_K);
-        reset_to_this.push_back(h_K);
-        reset_to_this.push_back(I_L);
-        reset_to_this.push_back(I_KL);
-        reset_to_this.push_back(I_Ca);
-        reset_to_this.push_back(I_KCa);
-        reset_to_this.push_back(I_KA);
-        reset_to_this.push_back(I_Na);
-        reset_to_this.push_back(I_K);
-        reset_to_this.push_back(I_syn);
     }
 
     // I_Ca gating variable functions (taken from Maxim Bazhenov's RE cell code).
-    double KenyonCell::minf_Ca(double i_V) {
-        return 1. / (1. + std::exp(-(i_V + 52.) / 7.4));
+    double KenyonCell::minf_Ca(double V_) {
+        return 1. / (1. + std::exp(-(V_ + 52.) / 7.4));
     }
-    double KenyonCell::mtau_Ca(double i_V) {
-        return (3. + 1. / (std::exp((i_V + 27.) / 10.) + std::exp(-(i_V + 102.) / 15.))) / 9.90;
+    double KenyonCell::mtau_Ca(double V_) {
+        return (3. + 1. / (std::exp((V_ + 27.) / 10.) + std::exp(-(V_ + 102.) / 15.))) / 9.90;
     }
-    double KenyonCell::hinf_Ca(double i_V) {
-        return 1. / (1. + std::exp((i_V + 80.) / 5.));
+    double KenyonCell::hinf_Ca(double V_) {
+        return 1. / (1. + std::exp((V_ + 80.) / 5.));
     }
-    double KenyonCell::htau_Ca(double i_V) {
-        return (85. + 1. / (std::exp((i_V + 48.) / 4.) + std::exp(-(i_V + 407.) / 50.))) / 3.74;
+    double KenyonCell::htau_Ca(double V_) {
+        return (85. + 1. / (std::exp((V_ + 48.) / 4.) + std::exp(-(V_ + 407.) / 50.))) / 3.74;
     }
 
     // I_KCa gating variable functions.
-    double KenyonCell::minf_KCa(double i_Ca) {
-        return 3333. * std::pow(i_Ca, 2) / (3333. * std::pow(i_Ca, 2) + 1.);
+    double KenyonCell::minf_KCa(double Ca_) {
+        return 3333. * std::pow(Ca_, 2) / (3333. * std::pow(Ca_, 2) + 1.);
     }
-    double KenyonCell::mtau_KCa(double i_Ca) {
-        return std::max(0.1, 0.896 / (100. * std::pow(i_Ca, 2) + 0.03));
+    double KenyonCell::mtau_KCa(double Ca_) {
+        return std::max(0.1, 0.896 / (100. * std::pow(Ca_, 2) + 0.03));
     }
 
     // I_KA gating variable functions.
-    double KenyonCell::minf_KA(double i_V) {
-        return 1. / (1. + std::exp(-(i_V + 60.) / 8.5));
+    double KenyonCell::minf_KA(double V_) {
+        return 1. / (1. + std::exp(-(V_ + 60.) / 8.5));
     }
-    double KenyonCell::mtau_KA(double i_V) {
-        return (1. / (std::exp((i_V + 35.82) / 19.69) + std::exp(-(i_V + 79.69) / 12.7)) + 0.37) / 3.74;
+    double KenyonCell::mtau_KA(double V_) {
+        return (1. / (std::exp((V_ + 35.82) / 19.69) + std::exp(-(V_ + 79.69) / 12.7)) + 0.37) / 3.74;
     }
 
     // I_Na gating variable functions.
-    double KenyonCell::malpha_Na(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::malpha_Na(double V_) {
+        double V2 = V_ + V_offset;
         return std::abs(V2 - 13.) < 1e-9? 1.28 : 0.32 * (13. - V2) / (std::exp((13. - V2) / 4.) - 1.);
     }
-    double KenyonCell::mbeta_Na(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::mbeta_Na(double V_) {
+        double V2 = V_ + V_offset;
         return std::abs(V2 - 40.) < 1e-9? 1.4 : 0.28 * (V2 - 40.) / (std::exp((V2 - 40.) / 5.) - 1.);
     }
-    double KenyonCell::halpha_Na(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::halpha_Na(double V_) {
+        double V2 = V_ + V_offset;
         return 0.128 * std::exp((17. - V2) / 18.);
     }
-    double KenyonCell::hbeta_Na(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::hbeta_Na(double V_) {
+        double V2 = V_ + V_offset;
         return 4. / (std::exp((40. - V2) / 5.) + 1.);
     }
 
     // I_K gating variable functions.
-    double KenyonCell::malpha_K(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::malpha_K(double V_) {
+        double V2 = V_ + V_offset;
         return std::abs(V2 - 15.) < 1e-9? 0.16 : 0.032 * (15. - V2) / (std::exp((15. - V2) / 5.) - 1.);
     }
-    double KenyonCell::mbeta_K(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::mbeta_K(double V_) {
+        double V2 = V_ + V_offset;
         return 0.5 * std::exp((10. - V2) / 40.);
     }
-    double KenyonCell::halpha_K(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::halpha_K(double V_) {
+        double V2 = V_ + V_offset;
         return 0.028 * std::exp((15. - V2) / 15.) + 2. / (std::exp((85. - V2) / 10.) + 1.);
     }
-    double KenyonCell::hbeta_K(double i_V) {
-        double V2 = i_V + V_offset;
+    double KenyonCell::hbeta_K(double V_) {
+        double V2 = V_ + V_offset;
         return 0.4 / (std::exp((40. - V2) / 10.) + 1.);
     }
 
-    void KenyonCell::save_state(std::string i_name) {
+    void KenyonCell::save_state(std::string name_) {
         try {
             std::ofstream file;
-            std::string file_name = "../states/" + i_name + ".txt";
+            std::string file_name = "../states/" + name_ + ".txt";
             file.open(file_name);
 
             file << V << ","
@@ -298,12 +296,12 @@ namespace kcnet {
             // If the file opened successfully:
 
             // Erase the previous reset state.
-            reset_to_this.erase(reset_to_this.begin(), reset_to_this.end());
+            reset.erase(reset.begin(), reset.end());
 
-            // Get each line of data, convert to double and add to vector reset_to_this.
+            // Get each line of data, convert to double and add to vector reset.
             std::string data;
             while(std::getline(file, data, ',')) {
-                reset_to_this.push_back(std::stod(data));
+                reset.push_back(std::stod(data));
             }
             file.close();
         } else {
@@ -316,58 +314,58 @@ namespace kcnet {
 
         // Tedious but what is there to do
         if(_idxs[0] != 0) { // Load new state for V.
-            V = reset_to_this[0];
+            V = reset[0];
         }
         if(_idxs[1] != 0) { // Load new state for Ca.
-            Ca = reset_to_this[1];
+            Ca = reset[1];
         }
         if(_idxs[2] != 0) { // Load new state for m_Ca.
-            m_Ca = reset_to_this[2];
+            m_Ca = reset[2];
         }
         if(_idxs[3] != 0) { // Load new state for h_Ca.
-            h_Ca = reset_to_this[3];
+            h_Ca = reset[3];
         }
         if(_idxs[4] != 0) { // Load new state for m_KCa.
-            m_KCa = reset_to_this[4];
+            m_KCa = reset[4];
         }
         if(_idxs[5] != 0) { // Load new state for m_KA.
-            m_KA = reset_to_this[5];
+            m_KA = reset[5];
         }
         if(_idxs[6] != 0) { // Load new state for m_Na.
-            m_Na = reset_to_this[6];
+            m_Na = reset[6];
         }
         if(_idxs[7] != 0) { // Load new state for h_Na.
-            h_Na = reset_to_this[7];
+            h_Na = reset[7];
         }
         if(_idxs[8] != 0) {  // Load new state for m_K.
-            m_K = reset_to_this[8];
+            m_K = reset[8];
         }
         if(_idxs[9] != 0) { // Load new state for h_K.
-            h_K = reset_to_this[9];
+            h_K = reset[9];
         }
         if(_idxs[10] != 0) { // Load new state for I_L.
-            I_L = reset_to_this[10];
+            I_L = reset[10];
         }
         if(_idxs[11] != 0) { // Load new state for I_KL.
-            I_KL = reset_to_this[11];
+            I_KL = reset[11];
         }
         if(_idxs[12] != 0) { // Load new state for I_Ca.
-            I_Ca = reset_to_this[12];
+            I_Ca = reset[12];
         }
         if(_idxs[13] != 0) {
-            I_KCa = reset_to_this[13];
+            I_KCa = reset[13];
         }
         if(_idxs[14] != 0) {
-            I_KA = reset_to_this[14];
+            I_KA = reset[14];
         }
         if(_idxs[15] != 0) {
-            I_Na = reset_to_this[15];
+            I_Na = reset[15];
         }
         if(_idxs[16] != 0) {
-            I_K = reset_to_this[16];
+            I_K = reset[16];
         }
         if(_idxs[17] != 0) {
-            I_syn = reset_to_this[17];
+            I_syn = reset[17];
         }
     }
 

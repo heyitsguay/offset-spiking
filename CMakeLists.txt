@@ -4,21 +4,22 @@ project(offset-spiking)
 include_directories(src include lib)
 
 set(SRC
-    src/Cell.cpp
-    src/Network.cpp
-    src/Synapse.cpp
-    src/epsp_histogram.cpp
-    src/main.cpp
-    src/offset_test.cpp
-)
+        src/KenyonCell.cpp
+        src/Network.cpp
+        src/CholinergicSynapse.cpp
+        src/epsp_histogram.cpp
+        src/main.cpp
+        src/offset_test.cpp
+        src/run_once.cpp include/run_once.h src/input_test.cpp include/input_test.h)
 
 set(INCLUDE
-    include/Cell.h
-    include/Network.h
-    include/Synapse.h
-    include/epsp_histogram.h
-    include/offset_test.h
-)
+        include/KenyonCell.h
+        include/Network.h
+        include/CholinergicSynapse.h
+        include/epsp_histogram.h
+        include/offset_test.h
+        src/run_once.cpp include/run_once.h src/input_test.cpp include/input_test.h)
+
 
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -Wall -g")

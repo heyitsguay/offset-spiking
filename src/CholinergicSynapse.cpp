@@ -1,7 +1,7 @@
 //
 // Created by Matthew Guay on 9/17/15.
 //
-#include "Synapse.h"
+#include "CholinergicSynapse.h"
 
 #include <vector>
 #include <random>

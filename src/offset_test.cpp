@@ -12,32 +12,62 @@
 
 namespace kcnet {
     void offset_test(std::string save_name_, const unsigned int n_trials_, const unsigned int n_threads_, const bool use_noise_) {
+        /* Tests the timing and number of CholinergicSynapses needed to elicit
+         * an action potential in a KenyonCell, by varying the number of
+         * afferent CholinergicSynapses and setting them to fire at a time
+         * chosen uniformly at random within a specified temporal window.
+         */
+
+        // Use to time the execution of this function.
         struct timeval clock0, clock1;
         gettimeofday(&clock0, NULL);
+
+        // Contains the trial structs structs defined in Network.h.
         std::vector<trial> all_trials;
+
+        // Total synapses - active and passive.
         const int total_synapses = 400;
+
+        // For each element of Ns, n_trials_ of the KC Network will be run
+        // with this number of active Cholinergic synapses.
         const std::vector<int> Ns = {50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200};
+        // Width of the active synapse activation temporal windows, in ms.
         const std::vector<double> windows = {10., 20., 30., 40., 50., 60., 100., 115., 130., 145., 160., 175., 190.,
                                              205., 220., 235., 250., 265., 280., 295., 310., 325., 340., 355., 370.,
                                              385., 400.};
+
+        // Each trial_params pair contains an element of Ns and an element of windows.
         std::vector<std::pair<int, double>> trial_params;
+
+        // Add all possible (Ns[i], window[j]) pairs to trial_params.
         for (int i = 0; i < Ns.size(); i++) {
             for (int j = 0; j < windows.size(); j++) {
                 trial_params.push_back(std::make_pair(Ns[i], windows[j]));
             }
         }
-
-        double lambda = (use_noise_? 0.0025 : 0.);
-        double t0 = 10.;
-        double dt = 0.03;
-        double sigma_noise = 1.5;
-        double syn_weight = 15.;
-
         const unsigned int n_pairs = (const unsigned int) trial_params.size();
 
+        // CholinergicSynapses emit random spikes at times whose interarrival
+        // times are drawn from an exponential distribution with parameter lambda.
+        double lambda = (use_noise_? 0.0025 : 0.);
+
+        // Left endpoint of the spike trigger window (ms).
+        double t0 = 10.;
+
+        // RK4 update timestep (ms).
+        double dt = 0.03;
+
+        // Standard deviation of the KenyonCell Gaussian noise current (nA).
+        double sigma_noise = 1.5;
+
+        // Conductance weight of CholinergicSynapses (μS).
+        double syn_weight = 15.;
+
+        // Run using a single thread.
         if(n_threads_ == 1) {
             for(int i=0; i<n_pairs; i++) {
 
+                // Create a new Network.
                 Network net = Network();
 
                 // Get the current pair of trial parameters.
@@ -58,10 +88,9 @@ namespace kcnet {
                 if(lambda > 0) {
                     net.create_synapses(total_synapses - N, syn_weight, false);
                 }
+
                 // Set net's KenyonCell to have the desired reset state (at equilibrium).
-                //if(i == 0) {
-                    net.kc->load_state("eq093015");
-                //}
+                net.kc->load_state("eq093015");
 
                 // Run n_trials_ trials with each parameter pair.
                 for (int k = 0; k < n_trials_; k++) {

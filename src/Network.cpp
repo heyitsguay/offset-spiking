@@ -125,6 +125,12 @@ namespace kcnet {
         }
     }
 
+    void Network::input_current(double current_t0_, double current_t1_, double current_A_) {
+        current_t0 = current_t0_;
+        current_t1 = current_t1_;
+        current_A = -current_A_;
+    }
+
     double Network::gsyn_icdf(double i_r) {
         // Used Python to build up a discretization of gysn's log10 empirical distribution's ICDF.
         // Interpolate linearly between the given values.
@@ -253,7 +259,7 @@ namespace kcnet {
             syn_gOcs.resize(4 * n_synapses);
             // Get their reversal potential from the first CholinergicSynapse.
             syn_E = pnkcs[0]->E;
-        } else { // No Synapses. Initialize syn_gOcs to hold one element.
+        } else { // No Synapses. Set syn_gOcs to hold one element.
             syn_gOcs.push_back(0.);
             syn_E = 0.;
         }
@@ -279,40 +285,48 @@ namespace kcnet {
             I_noises.push_back(current_noise(gen));
         }
 
+        // Input current amplitude.
+        double I_in = 0.;
+
         // Update the CholinergicSynapses and KenyonCells
         for(int i=0; i<n_steps; i++) {
             if(n_synapses > 0) {
                 // Update CholinergicSynapses.
-                for(int j=0; j<n_synapses; j++) {
+                for (int j = 0; j < n_synapses; j++) {
                     // Run the update.
                     pnkcs[j]->update(t_sim);
                     // Save the CholinergicSynapse's gOc information.
-                    for(int k=0; k<4; k++) {
+                    for (int k = 0; k < 4; k++) {
                         int idx = j + k * n_synapses;
                         syn_gOcs[idx] = pnkcs[j]->gOcs[k];
                     }
                 }
-
-                // Update the KenyonCell.
-                kc->update(n_synapses, syn_gOcs, syn_E, I_noises[i]);
-
-                // Update the KC property value lists.
-                ts[i] = t_sim;
-                Vs[i] = kc->V;
-                Cas[i] = kc->Ca;
-                I_Ls[i] = kc->I_L;
-                I_KLs[i] = kc->I_KL;
-                I_Cas[i] = kc->I_Ca;
-                I_KCas[i] = kc->I_KCa;
-                I_KAs[i] = kc->I_KA;
-                I_Nas[i] = kc->I_Na;
-                I_Ks[i] = kc->I_K;
-                I_syns[i] = kc->I_syn;
-
-                // Update simulation time.
-                t_sim += dt;
-
             }
+
+            if(t_sim > current_t0 && t_sim < current_t1) {
+                I_in = current_A;
+            } else {
+                I_in = 0.;
+            }
+
+            // Update the KenyonCell.
+            kc->update(n_synapses, syn_gOcs, syn_E, I_noises[i], I_in);
+
+            // Update the KC property value lists.
+            ts[i] = t_sim;
+            Vs[i] = kc->V;
+            Cas[i] = kc->Ca;
+            I_Ls[i] = kc->I_L;
+            I_KLs[i] = kc->I_KL;
+            I_Cas[i] = kc->I_Ca;
+            I_KCas[i] = kc->I_KCa;
+            I_KAs[i] = kc->I_KA;
+            I_Nas[i] = kc->I_Na;
+            I_Ks[i] = kc->I_K;
+            I_syns[i] = kc->I_syn;
+
+            // Update simulation time.
+            t_sim += dt;
         }
 
         // Create trials here.
