@@ -6,7 +6,7 @@
 #define OFFSET_SPIKING_RUN_ONCE_H
 #pragma once
 
-int run_once(double runtime,
+void run_once(double runtime,
              int n_synapses,
              double dt,
              double t0,

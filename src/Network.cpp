@@ -15,10 +15,14 @@ namespace kcnet {
     Network::Network(){}
     Network::~Network() {
         if(initialized) {
-            delete (kc);
+            delete(kc);
             for (int i = n_synapses - 1; i >= 0; i--) {
-                delete (pnkcs[i]);
+                delete(pnkcs[i]);
             }
+        }
+
+        if(vclamp != NULL) {
+            delete(vclamp);
         }
     }
 
@@ -77,30 +81,6 @@ namespace kcnet {
 
             create_synapses(n_active_synapses_, syn_weight);
 
-            /*// first check if n_synapses is changing.
-            if(n_active_synapses_ != n_active_synapses) {
-
-                // If the new setup has fewer CholinergicSynapses:
-                if(n_synapses_ < n_synapses) {
-                    // Free allocated memory.
-                    for(int i=n_synapses-1; i>=n_synapses_; i--){
-                        delete pnkcs[i];
-                    }
-
-                    // Erase the vector elements.
-                    pnkcs.erase(pnkcs.end() - (n_synapses - n_synapses_), pnkcs.end());
-
-                    // Update n_synapses.
-                    n_synapses = n_synapses_;
-
-                // Else, the new setup has more synapses.
-                } else {
-
-                    int n_new_synapses = n_synapses_ - n_synapses;
-                    create_synapses(n_new_synapses, syn_weight);
-                }
-            }*/
-
             // Resample the synapses' activation times and weights.
             resample_synapses(syn_weight);
 
@@ -123,6 +103,10 @@ namespace kcnet {
             // Mark this Network initialized.
             initialized = true;
         }
+    }
+
+    void Network::add_VoltageClamp(double V_com_, double t_i_, double t_d_) {
+        vclamp = new VoltageClamp(V_com_, *kc, t_i_, t_d_);
     }
 
     void Network::input_current(double current_t0_, double current_t1_, double current_A_) {
@@ -303,14 +287,18 @@ namespace kcnet {
                 }
             }
 
-            if(t_sim > current_t0 && t_sim < current_t1) {
+
+            if(vclamp != NULL) {
+                vclamp->update();
+                I_in = vclamp->I_clamp;
+            } else if(t_sim > current_t0 && t_sim < current_t1) {
                 I_in = current_A;
             } else {
                 I_in = 0.;
             }
 
             // Update the KenyonCell.
-            kc->update(n_synapses, syn_gOcs, syn_E, I_noises[i], I_in);
+            kc->update(n_synapses, syn_gOcs, syn_E, I_noises[i], -I_in);
 
             // Update the KC property value lists.
             ts[i] = t_sim;

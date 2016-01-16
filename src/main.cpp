@@ -1,9 +1,12 @@
 #include <iostream>
 
+#include "clamp_test.h"
 #include "epsp_histogram.h"
 #include "run_once.h"
 #include "offset_test.h"
 #include "input_test.h"
+#include "kc_threshold.h"
+#include "time_constant.h"
 
 using namespace kcnet;
 
@@ -22,6 +25,13 @@ int main() {
 
 //    run_once(100, 200, 0.03, 40., 60., 1.5, 15., 0.0025);
 
-    input_test(10., 60., 0.8);
+//    input_test(10., 50., 0.4);
+
+//    kc_threshold();
+
+//    time_constant(0.025);
+
+    clamp_test(-10., 100., 0.003, 1., 0.3, 0.1);
+
     return 0;
 }

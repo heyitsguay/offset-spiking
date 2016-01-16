@@ -19,7 +19,9 @@ namespace kcnet {
         dt = dt_;  // RK4 update time-step
 
         V = -69.145387;  // membrane voltage (mV)
-        C = 2.9e-1;  // membrane capacitance (μF) times V-> mV conversion factor (1000)
+
+        Cm = 2.9e-4; // membrane capacitance (μF)
+        C = Cm * 1000.;  // membrane capacitance (μF) times V-> mV conversion factor (1000)
         Cinv = 1. / C;  // reciprocal of membrane capacitance
         Ca = 2.629407e-4;  // intracellular Ca2+ concentration
 

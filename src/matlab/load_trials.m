@@ -24,7 +24,7 @@ function trials = load_trials(trialname_)
 % Therefore, trials is organized into (n_trials / trials_per) cells, each
 % containing (trials_per) trial structs. 
 
-savedir = '../src/bin/save/';
+savedir = '../../data/';
 trialid = fopen([savedir trialname_ '.dat']);
 
 % Skip the first line, it's a comment.

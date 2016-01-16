@@ -10,6 +10,7 @@
 
 #include "KenyonCell.h"
 #include "CholinergicSynapse.h"
+#include "VoltageClamp.h"
 
 namespace kcnet {
     struct trial {
@@ -32,6 +33,7 @@ namespace kcnet {
         std::vector<CholinergicSynapse*> pnkcs;
         std::vector<double> pnkc_ts;
         std::vector<double> ts, Vs, Cas, I_Ls, I_KLs, I_Cas, I_KCas, I_KAs, I_Nas, I_Ks, I_syns, I_noises;
+        VoltageClamp* vclamp = NULL;
 
         // Input current applied in [current_t0, current_t1] (ms).
         double current_t0 = -1.;
@@ -45,6 +47,8 @@ namespace kcnet {
 
         Network();
         ~Network();
+
+        void add_VoltageClamp(double V_com_, double t_i_=-1., double t_d_=0.);
 
         void setup(int n_active_synapses_, double dt_, double t0_, double t1_, double sigma_noise_=0., double syn_weight_=15., double lambda_=0.);
 

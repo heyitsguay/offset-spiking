@@ -10,7 +10,13 @@ set(SRC
         src/epsp_histogram.cpp
         src/main.cpp
         src/offset_test.cpp
-        src/run_once.cpp include/run_once.h src/input_test.cpp include/input_test.h)
+        src/run_once.cpp
+        src/input_test.cpp
+        src/kc_threshold.cpp
+        src/VoltageClamp.cpp
+        src/plot_Vs.cpp
+        src/clamp_test.cpp
+)
 
 set(INCLUDE
         include/KenyonCell.h
@@ -18,7 +24,14 @@ set(INCLUDE
         include/CholinergicSynapse.h
         include/epsp_histogram.h
         include/offset_test.h
-        src/run_once.cpp include/run_once.h src/input_test.cpp include/input_test.h)
+        include/run_once.h
+        include/input_test.h
+        include/kc_threshold.h
+        include/time_constant.h
+        include/VoltageClamp.h
+        include/clamp_test.h
+        include/plot_Vs.h
+)
 
 
 set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -O3")

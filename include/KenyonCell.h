@@ -7,6 +7,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 namespace kcnet{
 
@@ -18,7 +19,7 @@ namespace kcnet{
         double weight [4];
         std::vector<double> reset;
     public:
-        double dt, V, C, Cinv, Ca,
+        double dt, V, Cm, C, Cinv, Ca,
                 g_L, g_KL, E_L, g_Ca, E_Ca,
                 m_Ca, h_Ca, g_KCa, E_KCa, m_KCa,
                 g_KA, E_KA, m_KA, g_Na, E_Na,
