@@ -6,6 +6,7 @@
 #include <random>
 #include <ctime>
 #include <algorithm>
+#include <iostream>
 
 #include "Network.h"
 

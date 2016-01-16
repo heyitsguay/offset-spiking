@@ -18,13 +18,15 @@ namespace kcnet {
 
         assert(t_d_ >= 0);
 
-        V_oldfinal = kc.V;
+        v1 = 0.;
+
+        V_com = V_oldfinal = kc.V;
 
         // Initialize clamp current.
         I_clamp = 0.;
 
         // Initialize command potential and error terms.
-        V_com = e = e1 = e2 = 0.;
+        e = e1 = e2 = 0.;
 
         // Set PID type.
         pid_type = NO_PV;
@@ -35,6 +37,7 @@ namespace kcnet {
         K_p = kc.Cm / dt;
         tau = 5 * dt;
         expt = (dt / tau > 1e-15)? std::exp(-dt / tau) : 1 - dt / tau;
+        expt *= 1;
 
         // Set these so that we don't have to keep doing divisions.
         dt_ti = dt / t_i;
@@ -48,7 +51,8 @@ namespace kcnet {
     // Update the VoltageClamp states one time step.
 
         double d_cmd = V_final - V_oldfinal;
-        V_com = V_final + d_cmd * (1 - tau_dt) + (V_com - V_final + d_cmd * tau_dt) * expt;
+//        V_com = V_final + d_cmd * (1 - tau_dt) + (V_com - V_final + d_cmd * tau_dt) * expt;
+        V_com = V_com + (V_final - V_com) * expt;
         V_oldfinal = V_final;
 
         // Difference between command voltage and membrane potential.
