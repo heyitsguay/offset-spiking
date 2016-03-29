@@ -197,12 +197,8 @@ while 1
     plot([0 trial.runtime], [0.5 0.5], 'Color', 0.9 * ones(1,3));
     
     % Plot the activation window.
-    %ha = area(window_x, window_y, 'EdgeColor', 'none', 'FaceAlpha', 0.15, 'FaceColor', [0.5, 0.25, 0.25]);
-    ha = area(window_x, window_y, 'EdgeColor', 'none', 'FaceColor', [0.5, 0.25, 0.25]);
-    drawnow; pause(0.01);
-    ha.Face.ColorType = 'truecoloralpha';
-    ha.Face.ColorData(4) = 255 * 0.15;
-    drawnow; pause(0.01);
+    area(window_x, window_y, 'EdgeColor', 'none', 'FaceColor', [0.5, 0.25, 0.25]);
+    alpha(0.15);
     
     % Plot spikes if there are any.
     if n_spikes > 0
@@ -215,9 +211,10 @@ while 1
     set(ax_subplot, 'XTick', [0, trial.runtime]);
     
     % Set title.
-    subplottitle = sprintf('%d active synapses', trial.n_active_synapses);
+    subplottitle = sprintf('%d synapses', trial.n_active_synapses);
     title(subplottitle, 'fontweight', 'normal', 'fontsize', 10);
     
+    drawnow; pause(0.01);
 end
 
 % Give the overall figure a title.

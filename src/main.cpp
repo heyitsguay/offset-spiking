@@ -12,7 +12,7 @@ using namespace kcnet;
 
 int main() {
 //    offset_test("memtest", 5, 8, true);
-//    offset_test("test121315_8x_2", 20, 8, true);
+    offset_test("test031116_100", 100, 8, true);
 //    offset_test("test121315_8x_3", 20, 8, true);
 //    offset_test("test121315_8x_4", 20, 8, true);
 //    offset_test("test121315_8x_5", 20, 8, true);
@@ -31,7 +31,7 @@ int main() {
 
 //    time_constant(0.025);
 
-    clamp_test(-10., 100., 0.003, 1., 0.3, 0.1);
+//    clamp_test(-10., 100., 0.003, 1., 0.3, 0.1);
 
     return 0;
 }

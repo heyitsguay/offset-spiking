@@ -19,7 +19,7 @@ function trials = load_trials(trialname_)
 % Usage:
 % =====
 % trials = LOAD_TRIALS(trialname_) returns cell array 'trials' read from
-% the save file ../src/bin/save/[trialname_].dat. Each instance of
+% the save file ../../data/[trialname_].dat. Each instance of
 % run_test0 performs (trials_per) simulations per parameter configuration.
 % Therefore, trials is organized into (n_trials / trials_per) cells, each
 % containing (trials_per) trial structs. 

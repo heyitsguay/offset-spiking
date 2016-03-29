@@ -26,15 +26,15 @@ namespace kcnet {
         std::vector<trial> all_trials;
 
         // Total synapses - active and passive.
-        const int total_synapses = 400;
+        const int total_synapses = 415;
 
         // For each element of Ns, n_trials_ of the KC Network will be run
         // with this number of active Cholinergic synapses.
         const std::vector<int> Ns = {50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200};
         // Width of the active synapse activation temporal windows, in ms.
         const std::vector<double> windows = {10., 20., 30., 40., 50., 60., 100., 115., 130., 145., 160., 175., 190.,
-                                             205., 220., 235., 250., 265., 280., 295., 310., 325., 340., 355., 370.,
-                                             385., 400.};
+                                             205., 220., 235., 250., 265., 280., 295.};//, 310., 325., 340., 355., 370.,
+                                             //385., 400.};
 
         // Each trial_params pair contains an element of Ns and an element of windows.
         std::vector<std::pair<int, double>> trial_params;
@@ -90,7 +90,7 @@ namespace kcnet {
                 }
 
                 // Set net's KenyonCell to have the desired reset state (at equilibrium).
-                net.kc->load_state("eq093015");
+                net.kc->load_state("equilibrium");
 
                 // Run n_trials_ trials with each parameter pair.
                 for (int k = 0; k < n_trials_; k++) {
@@ -110,7 +110,7 @@ namespace kcnet {
                 thread_nets[i] = new_net;
                 // Run a dummy setup so that we can get the right KenyonCell reset state loaded.
                 thread_nets[i].setup(1, dt, t0, t0+1., sigma_noise, syn_weight, lambda);
-                thread_nets[i].kc->load_state("eq093015");
+                thread_nets[i].kc->load_state("equilibrium");
             }
 
             #pragma omp parallel num_threads(n_threads_)
@@ -164,7 +164,7 @@ namespace kcnet {
 
         // Open file to write.
         std::ofstream trial_file;
-        std::string fname = "../save/" + save_name_ + ".dat";
+        std::string fname = "../../data/" + save_name_ + ".dat";
         trial_file.open(fname.c_str());
 
         // Quick little header with number of trials and trials per parameter configuration.
